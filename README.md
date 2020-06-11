@@ -14,4 +14,6 @@ The project structure is quite simple:
 
 For this project, I am using a **Raspberry Pi 4 Model B** running *Ubuntu Server 20.04 64 bit*. You can find current *Ubuntu* releases for the *Pi* on the [Ubuntu website][1].
 
+For compiling C-code for the *RaspberryPi 4 model B* target, a suitable cross compiler is needed (see `doc/devlog.md` for a little story on that one...). If you are using a *Linux* distribution like I do, chances are that you can use the `aarch64-linux-gnu-gcc` compiler. If you need to use a different compiler, you need to specify it in the `Makefile` before building a target.
+
 [1]: https://ubuntu.com/download/raspberry-pi
