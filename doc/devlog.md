@@ -100,3 +100,55 @@ ubuntu@pi:~$ file ./hello
 ```
 
 That's what I call a perfect fit, nice!
+
+## Migrating my buildsystem to cmake
+
+After playing around a little bit with plain *make*, I realize that certain things are hard to do:
+
+* Having a dedicated build folder with subfolders for target architectures or automatic versioning seems to be hard with plain *make*
+* Linking between binaries and shared objects that are deployed to different locations compared to my build environment has given me some problems
+* Overall, I do not really like the readability and maintainability of my `Makefile` to be honest...
+
+All these issues seem to be remedied in *cmake*, so I guess I'll give it a go. Also, I have stumbled across *cmake* in multiple projects before and it seems knowing my stuff there is a nice skill to have.
+
+I found an [interesting webpage][1] that I will use as a first resource. The claims on *cmake* in the introduction sound intriguing to me:
+
+> It's clean, powerful, and elegant, so you can spend most of your time coding, not adding lines to an unreadable, unmaintainable Make (Or CMake 2) file. And CMake 3.11+ is supposed to be significantly faster, as well!
+
+Sign me up for that!
+
+Alrighty, after setting up a small test program to build with *cmake*, I whipped up a first `CMakeLists.txt` file to define my project and a first build target. After reading up a little bit, I have encountered a first question: *cmake*  requires the definition of a minimum version of *cmake* for a project in order to ensure compatibility across different build environments. While this certainly makes sense, the obvious question is: How do I figure out the actual minimum required version of *cmake* for my project? Sure, this may be a purely academic question for my very simple test case, but if I do this, I want to do this right. One simple workaround for this would be to just put my current version of *cmake* as the minimum required version. However, this would certainly impose an unnecessary restriction on people who might want to build this project in the future. After looking around for a bit, I discovered [this][2] project on GitHub which provides a *Python 3* script to automatically test a build process with different *cmake* versions. Let's give this a try.
+
+I created a virtual *Python 3* environment for the script to localize the dependencies and started the helper to download different *cmake* versions.
+
+```bash
+dev@dev-machine:~/src/cmake_min_version$ python3 -mvenv cmake_min_version_venv
+
+dev@dev-machine:~/src/cmake_min_version$ cmake_min_version_venv/bin/pip3 install -r requirements.txt
+...
+
+dev@dev-machine:~/src/cmake_min_version$ cmake_min_version_venv/bin/python3 cmake_downloader.py
+...
+
+dev@dev-machine:~/src/cmake_min_version$ cmake_min_version_venv/bin/python3 cmake_min_version.py ~/src/pi/gpio/
+Found 88 CMake binaries from directory tools
+
+[  0%] CMake 3.11.4 ✔ works
+[ 12%] CMake 3.6.3  ✘ error
+       CMakeLists.txt:1 (cmake_minimum_required)
+[ 25%] CMake 3.9.4  ✔ works
+[ 38%] CMake 3.8.1  ✘ error
+       CMakeLists.txt:7 (project)
+[ 50%] CMake 3.9.1  ✔ works
+[ 71%] CMake 3.8.2  ✘ error
+       CMakeLists.txt:7 (project)
+[ 86%] CMake 3.9.0  ✔ works
+[100%] Minimal working version: CMake 3.9.0
+
+cmake_minimum_required(VERSION 3.9.0)
+```
+
+And that's that. Guess I'll be putting version 3.9 as minimum reuqirement for now.
+
+[1]: https://cliutils.gitlab.io/modern-cmake/
+[2]: https://github.com/nlohmann/cmake_min_version
